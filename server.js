@@ -38,8 +38,9 @@ Player.belongsTo(Team);
 Player.belongsTo(Position);
 Position.hasMany(Player);
 
-const rosterSeed = async() => {
+const syncAndSeed = async() => {
     try{
+        await sequelize.sync({force: true});
         const packers = await Team.create({name:'Green Bay Packers'});
         const bears = await Team.create({name: 'Chciago Bears'});
         const vikings = await Team.create({name: 'Minnesota Vikings'});
@@ -264,6 +265,32 @@ const rosterSeed = async() => {
         await Player.create({name: 'Jalen Elliott', positionId: db.id, teamId: lions.id});
         await Player.create({name: 'Austin Seibert', positionId: k.id, teamId: lions.id});
         await Player.create({name: 'Jack Fox', positionId: p.id, teamId: lions.id});
+    }
+    catch(ex) {
+        console.log(ex)
+    }
+};
+
+//server setup
+
+const express = require('express');
+const app = express();
+const methodOverride = require('method-override');
+
+app.use(methodOverride('_method'));
+
+
+
+
+
+
+
+const startup = async(req, res, next) => {
+    try{
+        sequelize.sync();
+        await syncAndSeed();
+        const port = process.env.PORT || 3000;
+        app.listen(port, ()=> console.log(`listening on port ${port}`))
     }
     catch(ex) {
         next(ex)
