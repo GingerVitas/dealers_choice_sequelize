@@ -42,7 +42,7 @@ const syncAndSeed = async() => {
     try{
         await sequelize.sync({force: true});
         const packers = await Team.create({name:'Green Bay Packers'});
-        const bears = await Team.create({name: 'Chciago Bears'});
+        const bears = await Team.create({name: 'Chicago Bears'});
         const vikings = await Team.create({name: 'Minnesota Vikings'});
         const lions = await Team.create({name: 'Detroit Lions'});
         const qb = await Position.create({name: 'Quarterback'});
@@ -279,13 +279,49 @@ const methodOverride = require('method-override');
 
 app.use(methodOverride('_method'));
 
-app.get('/', async(req, res, next)=> {
+app.get('/', async(req, res, next) => {
     try{
-        const packers = await Player.findAll({
-            where: {teamId: 1},
+        res.redirect('/teams')
+    }
+    catch(ex) {
+        next(ex)
+    }
+})
+
+app.get('/teams', async(req, res, next) =>{
+    try{
+        const teams = await Team.findAll();
+        const html = teams.map(team => {
+            return `
+            <li>
+                <a href='/rosters/${team.id}'>${team.name}
+            </li>
+            `
+        }).join('');
+        res.send(`
+        <h1>NFC North Teams</h1>
+        <div>
+            <ul>
+            ${html}
+            </ul>
+        </div>
+        `)
+    }
+    catch(ex){
+        next(ex)
+    }
+});
+
+app.get('/rosters/:id', async(req, res, next)=> {
+    try{
+        const roster = await Player.findAll({
+            where: {teamId: req.params.id},
             include: [Position]
-        })
-        const html = packers.map(player => {
+        });
+        const team = await Team.findAll({
+            where: {id: req.params.id}
+        });
+        const html = roster.map(player => {
             return `
             <div>
                 <li>
@@ -295,13 +331,15 @@ app.get('/', async(req, res, next)=> {
             `
         }).join('');
         res.send(`
-        <h1>Green Bay Packer Roster</h1>
+        <h1>${team[0].name} Roster</h1>
+        <div>
+        <a href='/teams'>Back</a>
         <div>
             <ul>
             ${html}
             </ul>
         </div>
-        `)
+        `);
     }
     catch(ex){
         next(ex)
