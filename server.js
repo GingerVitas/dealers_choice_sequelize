@@ -279,7 +279,35 @@ const methodOverride = require('method-override');
 
 app.use(methodOverride('_method'));
 
-
+app.get('/', async(req, res, next)=> {
+    try{
+        const packers = await Player.findAll({
+            where: {teamId: 1},
+            include: [Position]
+        })
+        const html = packers.map(player => {
+            return `
+            <div>
+                <li>
+                ${player.name} - ${player.position.name}
+                </li>
+            </div>
+            `
+        }).join('');
+        res.send(`
+        <h1>Green Bay Packer Roster</h1>
+        <div>
+            <ul>
+            ${html}
+            </ul>
+        </div>
+        `)
+    }
+    catch(ex){
+        next(ex)
+    }
+}
+)
 
 
 
@@ -296,3 +324,5 @@ const startup = async(req, res, next) => {
         next(ex)
     }
 };
+
+startup();
