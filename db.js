@@ -37,23 +37,28 @@ Player.belongsTo(Team);
 Player.belongsTo(Position);
 Position.hasMany(Player);
 
+
 const syncAndSeed = async() => {
     try{
         await sequelize.sync({force: true});
-        const packers = await Team.create({name:'Green Bay Packers'});
-        const bears = await Team.create({name: 'Chicago Bears'});
-        const vikings = await Team.create({name: 'Minnesota Vikings'});
-        const lions = await Team.create({name: 'Detroit Lions'});
-        const qb = await Position.create({name: 'Quarterback'});
-        const rb = await Position.create({name: 'Running Back'});
-        const wr = await Position.create({name: 'Wide Receiver'});
-        const te = await Position.create({name: 'Tight End'});
-        const ol = await Position.create({name: 'Offensive Lineman'});
-        const dl = await Position.create({name: 'Defensive Lineman'});
-        const lb = await Position.create({name: 'Linebacker'});
-        const db = await Position.create({name: 'Defensive Back'});
-        const k = await Position.create({name: 'Kicker'});
-        const p = await Position.create({name: 'Punter'});
+        const [packers, bears, vikings, lions] = await Promise.all([
+            Team.create({name:'Green Bay Packers'}),
+            Team.create({name:'Chicago Bears'}),
+            Team.create({name:'Minnesota Vikings'}),
+            Team.create({name:'Detroit Lions'})
+        ]);
+        const [qb, rb, wr, te, ol, dl, lb, db, k, p] = await Promise.all([
+            Position.create({name: 'Quarterback'}),
+            Position.create({name: 'Running Back'}),
+            Position.create({name: 'Wide Receiver'}),
+            Position.create({name: 'Tight End'}),
+            Position.create({name: 'Offensive Lineman'}),
+            Position.create({name: 'Defensive Lineman'}),
+            Position.create({name: 'Linebacker'}),
+            Position.create({name: 'Defensive Back'}),
+            Position.create({name: 'Kicker'}),
+            Position.create({name: 'Punter'})
+        ]);
         await Player.create({name: 'Aaron Rodgers', positionId: qb.id, teamId: packers.id});
         await Player.create({name: 'Jordan Love', positionId: qb.id, teamId: packers.id});
         await Player.create({name: 'Kurt Benkert', positionId: qb.id, teamId: packers.id});
