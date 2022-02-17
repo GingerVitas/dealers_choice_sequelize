@@ -39,15 +39,28 @@ app.get('/teams', async(req, res, next) =>{
     }
 });
 
+app.post('/rosters/:id', async(req, res, next)=> {
+    try{
+        playerName = req.body.playerId;
+        position = req.body.positionId;
+        await Player.create({name: playerName, positionId: position, teamId: req.params.id})
+        res.redirect('back')
+    }
+    catch(ex){
+        next(ex)
+    }
+})
+
 app.get('/rosters/:id', async(req, res, next)=> {
     try{
         const roster = await Player.findAll({
             where: {teamId: req.params.id},
-            include: [Position]
+            include: [Position],
         });
         const team = await Team.findAll({
             where: {id: req.params.id}
         });
+        const position = await Position.findAll();
         const html = roster.map(player => {
             return `
             <div>
@@ -61,6 +74,20 @@ app.get('/rosters/:id', async(req, res, next)=> {
         <h1>${team[0].name} Roster</h1>
         <div>
         <a href='/teams'>Back</a>
+        </div>
+        <div>
+            <h3>Add a player</h3>
+            <form method='POST'>
+                <input name='playerId' placeholder='Player Name' />
+                <select name='positionId'>
+                    ${position.map( position => {
+                        return `
+                        <option value=${position.id}> ${position.name} </option>
+                        `
+                    }).join('')}
+                </select>
+                <button>Add Player</button>
+            </form>
         <div>
             <ul>
             ${html}
