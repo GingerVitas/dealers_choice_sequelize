@@ -62,6 +62,18 @@ app.delete('/rosters/:id', async(req, res, next) => {
     }
 })
 
+app.put('/rosters/:id', async(req, res, next)=>{
+    try{
+        const player = await Player.findByPk(req.body.playerId);
+        player.teamId = req.body.teamId;
+        await player.save();
+        res.redirect(`/rosters/${req.body.teamId}`)
+    }
+    catch(ex){
+        next(ex)
+    }
+});
+
 app.get('/rosters/:id', async(req, res, next)=> {
     try{
         const roster = await Player.findAll({
@@ -73,6 +85,7 @@ app.get('/rosters/:id', async(req, res, next)=> {
             where: {id: req.params.id}
         });
         const position = await Position.findAll();
+        const division = await Team.findAll();
         const html = roster.map(player => {
             return `
             <div>
@@ -102,8 +115,8 @@ app.get('/rosters/:id', async(req, res, next)=> {
             </form>
         </div>
         <div>
-        <h3>Cut a player</h3>
-        <form method='POST' action='/rosters/:id?_method=delete'>
+            <h3>Cut a player</h3>
+            <form method='POST' action='/rosters/:id?_method=delete'>
             <select name='playerId'>
                 ${roster.map( player => {
                     return `
@@ -112,8 +125,30 @@ app.get('/rosters/:id', async(req, res, next)=> {
                 }).join('')}
             </select>
             <button>Cut Player</button>
-        </form>
-    </div>
+            </form>
+        </div>
+        <div>
+            <h3>Trade a player</h3>
+            <form method='POST' action='/rosters/:id?_method=put'>
+            <p>Trade
+            <select name='playerId'>
+                ${roster.map( player => {
+                    return `
+                    <option value=${player.id}> ${player.name} </option>
+                    `
+                }).join('')}
+            </select>
+            to
+            <select name='teamId'>
+                ${division.map(team => {
+                    return `
+                    <option value=${team.id}> ${team.name} </option>
+                    `
+                }).join('')}
+            </select>
+            <button>Trade Player</button>
+            </form>
+        </div>
         <div>
             <ul>
             ${html}
