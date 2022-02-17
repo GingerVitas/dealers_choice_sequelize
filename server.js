@@ -51,6 +51,17 @@ app.post('/rosters/:id', async(req, res, next)=> {
     }
 })
 
+app.delete('/rosters/:id', async(req, res, next) => {
+    try{
+        const player = await Player.findByPk(req.body.playerId);
+        await player.destroy();
+        res.redirect('back');
+    }
+    catch(ex){
+        next(ex)
+    }
+})
+
 app.get('/rosters/:id', async(req, res, next)=> {
     try{
         const roster = await Player.findAll({
@@ -77,7 +88,7 @@ app.get('/rosters/:id', async(req, res, next)=> {
         <a href='/teams'>Back</a>
         </div>
         <div>
-            <h3>Add a player</h3>
+            <h3>Sign a player</h3>
             <form method='POST'>
                 <input name='playerId' placeholder='Player Name' />
                 <select name='positionId'>
@@ -89,6 +100,20 @@ app.get('/rosters/:id', async(req, res, next)=> {
                 </select>
                 <button>Add Player</button>
             </form>
+        </div>
+        <div>
+        <h3>Cut a player</h3>
+        <form method='POST' action='/rosters/:id?_method=delete'>
+            <select name='playerId'>
+                ${roster.map( player => {
+                    return `
+                    <option value=${player.id}> ${player.name} </option>
+                    `
+                }).join('')}
+            </select>
+            <button>Cut Player</button>
+        </form>
+    </div>
         <div>
             <ul>
             ${html}
