@@ -54,6 +54,7 @@ app.post('/rosters/:id', async(req, res, next)=> {
 app.get('/rosters/:id', async(req, res, next)=> {
     try{
         const roster = await Player.findAll({
+            order: ['positionId'],
             where: {teamId: req.params.id},
             include: [Position],
         });
